@@ -36,11 +36,4 @@ K5-L3B-Day05-Track3-VietnamBamboo/
     ├── README.md    ← cách bấm, chú thích ảnh
     └── anh-1.png · anh-2.png · anh-3.png   ← ảnh đánh số ①–⑦
 ```
-
-## Checklist nộp (trước 23:59 ngày lab)
-
-- [ ] Repo **công khai**, mở được bằng cửa sổ ẩn danh
-- [ ] Mỗi người đọc lại phần có tên mình và giải thích được
-- [ ] Sau buổi demo, điền ca lạ vào spec §7
-
 > Dữ liệu trong bài là dựng; hãng "Bay Mẫu" là hãng dựng. Khoá học không liên kết với Traveloka hay hãng bay nào. Không có dữ liệu thật của người thật, không có API key.
