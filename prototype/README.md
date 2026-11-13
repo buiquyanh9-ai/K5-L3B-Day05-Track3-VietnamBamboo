@@ -35,11 +35,17 @@
 | "đổi đi nhanh lên!!!" | #15 | Như Ca A: giữ BM 201, một nút xác nhận |
 | Câu khác không nhận ra | — | "Mình chưa chắc hiểu đúng ý bạn, nên mình chưa làm gì" + 3 lựa chọn |
 
-Mở sẵn một ca bằng đường dẫn: `index.html#A` · `#B` · `#C` · `#A/staff:tonight` (Màn 2 có ca mới) · `#B/modal` (hộp gửi hoàn).
+Mở sẵn một ca bằng đường dẫn: `index.html#A` · `#B` · `#C` · `#A/staff:tonight` (ảnh 2) · `#B/modal` (ảnh 3).
 
-## Số chú thích trên màn hình
+## Ảnh đánh số
 
-Các số tròn màu cam hiện thẳng trên prototype (bật/tắt bằng ô "Hiện số chú thích").
+**Ảnh 1 · Ca A, Màn 1** (`anh-1.png`)
+
+![Ảnh 1](anh-1.png)
+
+**Ảnh 2 · Ca A sau khi khách bấm "Mình phải bay tối nay": Màn 2 có ca mới** (`anh-2.png`)
+
+![Ảnh 2](anh-2.png)
 
 | Số | Thể hiện gì | Nguyên tắc HAX/PAIR | Mức tự chủ |
 |---|---|---|---|
@@ -49,4 +55,8 @@ Các số tròn màu cam hiện thẳng trên prototype (bật/tắt bằng ô "
 | ④ | Thẻ giữ chỗ có đếm ngược, nút "Nhả chỗ" | G8 · gạt bỏ dễ | `giu_cho_chuyen_moi` · tự làm, có đường lui |
 | ⑤ | Nút "Gặp nhân viên" và Màn 2 (tóm tắt ca) | PAIR Errors + Graceful Failure | `chuyen_nhan_vien` · tự làm |
 | ⑥ | Dải xanh "Bạn đang chat với trợ lý AI", làm được / không làm | G1 (+ minh bạch là AI) | Việc cấm nói trước, không có nút |
-| ⑦ | Hộp gửi hoàn chọn từng hành khách *(Ca B → "Tiếp tục hoàn vé…")* | Ma sát đúng chỗ | `gui_yeu_cau_hoan_ve` · khách xác nhận |
+| ⑦ | Hộp gửi hoàn chọn từng hành khách *(ảnh 3)* | Ma sát đúng chỗ | `gui_yeu_cau_hoan_ve` · khách xác nhận |
+
+**Ảnh 3 · Ca B, hộp gửi yêu cầu hoàn** (`anh-3.png`)
+
+![Ảnh 3](anh-3.png)

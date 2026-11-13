@@ -160,13 +160,13 @@ Câu chữ ở §3 đi theo mức tự chủ đã chốt ở §4: giữ chỗ t�
 | Đường | Ca trong bài | Prototype thể hiện ở đâu |
 |---|---|---|
 | Happy path | #1: khách hỏi giờ bay → AI báo huỷ, đưa 2 chuyến đủ chỗ → khách chọn BM 201 → xác nhận → đổi xong | Nút "Ca thường" → "Giữ chỗ BM 201" → "Xác nhận đổi cả 2 người" |
-| Low-confidence ② | #3 Ca A: "sớm nhất" mơ hồ khi chuyến sớm nhất không đủ chỗ → trả lời kèm giới hạn, giữ chỗ, hỏi một câu | Nút "Ca A" |
+| Low-confidence ② | #3 Ca A: "sớm nhất" mơ hồ khi chuyến sớm nhất không đủ chỗ → trả lời kèm giới hạn, giữ chỗ, hỏi một câu | Nút "Ca A" (ảnh 1) |
 | Failure / không căn cứ ① | #2: hỏi bồi thường → dữ liệu không ủng hộ khoản tiền nào → AI nói rõ không có bồi thường tiền mặt, dẫn chính sách, không hứa | Gõ "bồi thường bao nhiêu" vào ô nhắn tin |
 | Correction (khách sửa AI) | #9: "Sao lại 7h, mình bảo 9 rưỡi" → AI nói thật đã dùng lần đổi, giữ chỗ BM 205, chuyển nhân viên kèm tóm tắt | Ca A → "Xác nhận đổi" → "Sai rồi, mình muốn chuyến khác" |
 
 ### Nguyên tắc HAX/PAIR *(3 nguyên tắc, mỗi cái trỏ vào một chỗ cụ thể)*
 
-| Nguyên tắc | Thể hiện ở câu chữ / chỗ nào | Số trên màn hình prototype |
+| Nguyên tắc | Thể hiện ở câu chữ / chỗ nào | Số trên ảnh prototype |
 |---|---|---|
 | **G10 · Thu hẹp phạm vi khi nghi ngờ** | Ca A: AI không làm theo nghĩa đen "sớm nhất" mà hỏi một câu "đổi cả hai sang BM 201, chọn chuyến khác, hay bắt buộc tối nay?". Ca B: hỏi "hoàn cho cả hai người phải không?" thay vì gửi | ① |
 | **G11 · Giải thích vì sao + PAIR Explainability & Trust** | Dòng "Dựa vào" dưới câu AI: số chỗ BM 217 kèm giờ tra · số hành khách trong đặt chỗ · dòng chính sách. BM 217 bị làm mờ, có ghi lý do "không đủ chỗ cho 2 người", để khách tự kiểm chứ không phải tin AI | ② |
@@ -266,7 +266,7 @@ Tool khó nhất vì đây là tool **duy nhất hoàn toàn không đảo đư�
 - **Màn 2 · Nhân viên:** hàng chờ nhận ca được chuyển, kèm tóm tắt.
 - Bên phải có bảng mức tự chủ và bảng chú thích. Nút "⏩ Tua 15 phút" để demo lúc hết giờ giữ chỗ.
 
-**Số chú thích:** các số tròn màu cam ①–⑦ hiện thẳng trên màn hình prototype (bật/tắt bằng ô "Hiện số chú thích"). Xem ①–⑥ ở Ca A (`index.html#A`, bấm "Mình phải bay tối nay" để thấy ⑤ trên Màn 2), ⑦ ở Ca B → "Tiếp tục hoàn vé…" (`index.html#B/modal`).
+**Ảnh đánh số:** `prototype/anh-1.png` (Ca A, Màn 1, số ①–④ ⑥) · `prototype/anh-2.png` (Ca A sau khi khách bấm "Mình phải bay tối nay", Màn 2 có ca mới, số ⑤) · `prototype/anh-3.png` (Ca B, hộp gửi hoàn, số ⑦). Các số cũng hiện thẳng trên prototype (bật/tắt bằng ô "Hiện số chú thích").
 
 | Số | Thể hiện gì | Nguyên tắc HAX/PAIR | Mức tự chủ |
 |---|---|---|---|

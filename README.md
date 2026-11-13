@@ -11,7 +11,7 @@
 | Bùi Đình Quý Anh | 2A202603969 | Role 1 · Kịch bản & phạm vi | spec §1 (lát cắt, 3 việc không làm), §2 (15 kịch bản, chọn 2 ca đắt nhất) · nói phần mở đầu khi demo |
 | Nguyễn Thanh Tùng | 2A202603957 | Role 2 · Khi AI sai | spec §3 (câu AI nguyên văn, khách thấy gì, ai được báo, loại lỗi, nguyên tắc HAX) · demo Ca A |
 | Trịnh Ngọc Ninh | 2A202603996 | Role 3 · Mức tự chủ | spec §4 (mức cho từng tool, tool khó xếp nhất, luật thêm, thử trên 3 kịch bản), §6 · demo Ca B |
-| Giang Thái Sơn | 2A202603964 | Role 4 · Tổng hợp | prototype, số chú thích trên màn hình, spec §5, ghép bài, repo · demo chỉ số ①–⑦ và trả lời ca lạ |
+| Giang Thái Sơn | 2A202603964 | Role 4 · Tổng hợp | prototype, ảnh đánh số, spec §5, ghép bài, repo · demo chỉ số ①–⑦ và trả lời ca lạ |
 	
 ## Bài làm tóm tắt
 
@@ -33,7 +33,8 @@ K5-L3B-Day05-Track3-VietnamBamboo/
 ├── spec.md          ← bài nộp chính (§1–§7)
 └── prototype/
     ├── index.html   ← prototype bấm được, mở bằng trình duyệt
-    └── README.md    ← cách bấm, chú thích các số ①–⑦
+    ├── README.md    ← cách bấm, chú thích ảnh
+    └── anh-1.png · anh-2.png · anh-3.png   ← ảnh đánh số ①–⑦
 ```
 
 ## Checklist nộp (trước 23:59 ngày lab)
