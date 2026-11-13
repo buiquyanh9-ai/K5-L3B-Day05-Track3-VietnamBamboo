@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trợ lý đổi chuyến · T3</title>
+<!--
+  Prototype LAB5 · Track T3 Du lịch.
+  Một file HTML, không backend, không gọi AI thật, không gửi dữ liệu đi đâu.
+  Mọi "tool" là giả lập bằng trạng thái trong trình duyệt; dữ liệu là dữ liệu dựng của track.
+  Mở thẳng bằng trình duyệt. Có thể mở sẵn một ca bằng hash: index.html#A · #B · #C
+-->
+<style>
+:root{
+  --ink:#17202a;--mut:#5d6873;--line:#e2e6ea;--bg:#ffffff;--card:#ffffff;--soft:#f5f7f9;
+  --brand:#0b63c4;--brand-soft:#e5effa;
+  --ok:#1d7448;--ok-soft:#e1f3e8;
+  --warn:#8f5b00;--warn-soft:#fff1d1;
+  --bad:#ad2a20;--bad-soft:#fce5e2;
+  --chip:#c2410c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","Noto Sans",Arial,sans-serif;font-size:15px;line-height:1.45}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 20px}
+h1{margin:0;font-size:18px}
+.sub{color:var(--mut);font-size:13px}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.ctrl button{font:inherit;font-size:13.5px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+.ctrl button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.ctrl label{font-size:13px;color:var(--mut)}
+main{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:18px;padding:18px 20px;max-width:1280px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:16px}}
+.pane{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pane-h{padding:9px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut);display:flex;justify-content:space-between;gap:8px}
+.booking{margin:10px 12px 0;padding:9px 12px;border-radius:10px;background:var(--bad-soft);font-size:13.5px}
+.booking b{color:var(--bad)}
+.scope{margin:8px 12px 0;padding:8px 11px;border-radius:10px;background:var(--brand-soft);font-size:12.5px}
+.chat{padding:10px 12px;display:flex;flex-direction:column;gap:10px;min-height:420px;max-height:70vh;overflow-y:auto}
+.u{align-self:flex-end;background:var(--brand);color:#fff;padding:8px 12px;border-radius:14px 14px 3px 14px;max-width:85%}
+.a{align-self:flex-start;background:var(--soft);padding:10px 12px;border-radius:14px 14px 14px 3px;width:96%}
+.a.human{background:var(--ok-soft)}
+.a.sys{background:transparent;border:1px dashed var(--line);color:var(--mut);font-size:13px}
+.who{font-size:11.5px;color:var(--mut);margin-bottom:3px}
+.status{display:inline-block;margin:0 0 6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--warn-soft);color:var(--warn)}
+.status.okk{background:var(--ok-soft);color:var(--ok)}
+.status.bad{background:var(--bad-soft);color:var(--bad)}
+.ev{margin-top:8px;font-size:12.5px;color:var(--mut);border-left:3px solid var(--line);padding-left:8px}
+.card{margin-top:8px;border-radius:10px;padding:9px 11px;font-size:14px;background:var(--card);border:1px solid var(--line)}
+.card.hold{background:var(--ok-soft);border-color:transparent}
+.card.confirm{background:var(--warn-soft);border-color:transparent}
+.card.blocked{background:var(--bad-soft);border-color:transparent}
+.card.done{background:var(--brand-soft);border-color:transparent}
+.card.draft{border-style:dashed}
+.card ul{margin:4px 0 0;padding-left:18px}
+.fl{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 9px;border:1.5px solid var(--line);border-radius:10px;margin-top:6px;background:var(--card);font-size:14px}
+.fl.off{opacity:.55;border-style:dashed}
+.fl.held{border-color:var(--ok)}
+.fl small{color:var(--mut);display:block}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btn{font:inherit;font-size:13.5px;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;background:var(--line);color:var(--ink)}
+.btn.pri{background:var(--ok);color:#fff}
+.btn.danger{background:var(--bad);color:#fff}
+.btn.staff{background:transparent;border:1.5px solid var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.compose{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}
+.compose input{flex:1;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.n{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--chip);color:#fff;font-size:11px;font-weight:700;margin-right:4px;vertical-align:1px;flex:none}
+.hide-n .n{display:none}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.box{padding:14px 16px}
+.box h2{font-size:15px;margin:0 0 8px}
+.empty{color:var(--mut);font-size:14px}
+dl.sum{margin:6px 0 0;font-size:14px}
+dl.sum dt{color:var(--mut);font-size:12.5px;margin-top:6px}
+dl.sum dd{margin:0}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td,th{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.lv-auto{background:var(--ok-soft);color:var(--ok)}
+.lv-ask{background:var(--warn-soft);color:var(--warn)}
+.lv-no{background:var(--bad-soft);color:var(--bad)}
+.ann{list-style:none;padding:0;margin:0;font-size:13.5px}
+.ann li{margin-bottom:6px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.modal .card{max-width:420px;width:100%;background:var(--card);padding:16px 18px}
+.modal label{display:block;font-size:14px;margin-top:6px}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:0 16px 20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Trợ lý đổi chuyến khi chuyến bay bị huỷ · T3 Du lịch</h1>
+  <div class="sub">Dữ liệu dựng · hãng "Bay Mẫu" là hãng dựng · không gọi AI thật · bây giờ là 15:02 ngày 12/11/2026</div>
+  <div class="ctrl">
+    <span class="sub">Chọn ca:</span>
+    <button data-case="A">Ca A · "Đổi chuyến sớm nhất"</button>
+    <button data-case="B">Ca B · "Huỷ hết, hoàn tiền"</button>
+    <button data-case="C">Ca thường · "Mấy giờ bay?"</button>
+    <button id="ff" title="Dùng khi demo để xem chuyện gì xảy ra lúc hết giờ giữ chỗ">⏩ Tua 15 phút</button>
+    <label><input type="checkbox" id="showN" checked> Hiện số chú thích</label>
+  </div>
+</header>
+
+<main>
+  <section class="pane" aria-label="Màn 1 · Khách">
+    <div class="pane-h"><span>Màn 1 · Khách · Đặt chỗ của tôi</span><span>TRV-7Q2K</span></div>
+    <div class="booking"><b>BM 213 · Hà Nội → TP.HCM · 12/11 19:00 · ĐÃ HUỶ</b> do thời tiết (bão)<br>2 hành khách: Nguyễn Minh An (34 tuổi) · Nguyễn Gia Bình (5 tuổi)</div>
+    <div class="scope"><span class="n">6</span><b>Bạn đang chat với trợ lý AI.</b> Trợ lý được: tra đặt chỗ · giữ chỗ 20 phút · đổi vé <b>khi bạn bấm xác nhận</b> · soạn sẵn yêu cầu hoàn. Không làm: đổi tên người bay · tách trẻ nhỏ khỏi người lớn · hứa bồi thường. Những việc đó do nhân viên xử lý.</div>
+    <div class="chat" id="chat"></div>
+    <form class="compose" id="compose"><input id="msg" placeholder="Nhắn tin (thử một ca lạ)…" autocomplete="off"><button class="btn pri" type="submit">Gửi</button></form>
+  </section>
+
+  <div class="side">
+    <section class="pane box" aria-label="Màn 2 · Nhân viên">
+      <h2>Màn 2 · Nhân viên hỗ trợ · hàng chờ</h2>
+      <div id="staff"></div>
+    </section>
+    <section class="pane box">
+      <h2>Mức tự chủ (khớp spec §4)</h2>
+      <div class="tbl"><table><thead><tr><th>Tool / luật</th><th>Mức</th><th>Vì sao (cái giá khi sai)</th></tr></thead><tbody id="tools"></tbody></table></div>
+    </section>
+    <section class="pane box">
+      <h2>Chú thích: nguyên tắc nào nằm ở đâu</h2>
+      <ul class="ann" id="ann"></ul>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="card">
+  <b>Gửi yêu cầu hoàn vé</b>
+  <div style="font-size:14px;margin:6px 0">Gửi rồi thì <b>không huỷ được</b>. Người được chọn sẽ mất chỗ trên mọi chuyến thay thế. Tiền về phương thức đã thanh toán (có trường hợp hoàn bằng voucher), có thể mất <b>tới 90 ngày</b>. Huỷ do bão: <b>không có bồi thường tiền mặt</b>.</div>
+  <div style="font-size:13px;color:var(--mut);margin-top:8px"><span class="n">7</span>Chọn từng hành khách cần hoàn:</div>
+  <label><input type="checkbox" class="px" value="0"> Nguyễn Minh An (34 tuổi)</label>
+  <label><input type="checkbox" class="px" value="1"> Nguyễn Gia Bình (5 tuổi)</label>
+  <label style="margin-top:10px"><input type="checkbox" id="ack"> Mình hiểu yêu cầu này <b>không rút lại được</b></label>
+  <div class="btns"><button class="btn danger" id="send" disabled>Gửi yêu cầu hoàn vé</button><button class="btn" id="cancel">Quay lại</button></div>
+</div></div>
+
+<script>
+/* ============ DỮ LIỆU DỰNG CỦA TRACK ============ */
+const PAX = [{ name: 'Nguyễn Minh An', age: 34 }, { name: 'Nguyễn Gia Bình', age: 5 }];
+const FLIGHTS = [
+  { code: 'BM 217', time: '12/11 21:00', seats: 1 },
+  { code: 'BM 201', time: '13/11 07:00', seats: 9 },
+  { code: 'BM 205', time: '13/11 09:30', seats: 4 }
+];
+const HOLD_SEC = 20 * 60;
+
+/* ============ TRẠNG THÁI (thay cho tool thật) ============ */
+let S;
+function reset() {
+  S = { hold: null, holdEnd: 0, warned: false, changed: null, refunded: false, staff: null, staffSince: 0, staffDone: false, log: [] };
+}
+const now = () => Date.now() + (window.__skip || 0);
+const F = code => FLIGHTS.find(f => f.code === code);
+const n = k => `<span class="n">${k}</span>`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// giu_cho_chuyen_moi (tự làm): luôn giữ đủ chỗ cho cả 2 hành khách, chỉ giữ 1 chuyến một lúc
+function hold(code) { S.hold = code; S.holdEnd = now() + HOLD_SEC * 1000; S.warned = false; }
+function release() { S.hold = null; }
+const left = () => Math.max(0, Math.round((S.holdEnd - now()) / 1000));
+const mmss = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+/* ============ KHỐI GIAO DIỆN DÙNG LẠI ============ */
+const EVIDENCE = (extra = '') => `<div class="ev">${n(2)}<b>Dựa vào:</b> đặt chỗ TRV-7Q2K (2 hành khách) · số chỗ tra lúc 15:02 · chính sách Bay Mẫu: chuyến bị huỷ được đổi miễn phí <b>1 lần</b> trong 48 giờ hoặc hoàn toàn bộ; huỷ do thời tiết không bồi thường tiền mặt${extra}</div>`;
+
+// Luật nhóm thêm: chỉ đề xuất chuyến có số chỗ >= số hành khách
+function flightList() {
+  return FLIGHTS.map(f => {
+    const short = f.seats < PAX.length;
+    const held = S.hold === f.code;
+    return `<div class="fl ${short ? 'off' : ''} ${held ? 'held' : ''}"><div><b>${f.code}</b> · ${f.time}<small>${short
+      ? `chỉ còn ${f.seats} chỗ, vé của bạn có ${PAX.length} người → không đổi được cho cả hai`
+      : held ? `đang giữ ${PAX.length} chỗ cho bạn` : `còn ${f.seats} chỗ`}</small></div>${short ? '<small>không chọn được</small>' : ''}</div>`;
+  }).join('');
+}
+function holdCard() {
+  if (!S.hold) return '';
+  return `<div class="card hold">${n(4)}<b>Đang giữ ${PAX.length} chỗ ${S.hold}</b> · còn <span class="timer">--:--</span><br>Vé <b>chưa đổi</b>, lần đổi miễn phí vẫn còn. Hết giờ thì chỗ tự nhả, không mất gì.</div>`;
+}
+function confirmCard(code) {
+  const f = F(code);
+  return `<div class="card confirm"><b>Xác nhận đổi vé</b> (chỉ đổi khi bạn bấm)
+    <ul><li>BM 213 (đã huỷ) → <b>${f.code} · ${f.time}</b></li>
+    ${PAX.map(p => `<li>${p.name} (${p.age} tuổi) ✓</li>`).join('')}
+    <li>Phí 0 đ · <b>dùng lần đổi miễn phí duy nhất</b>, sau khi đổi trợ lý không tự đổi lại được</li></ul></div>`;
+}
+const other = c => c === 'BM 201' ? 'BM 205' : 'BM 201';
+const pickButtons = code => [
+  { label: `Xác nhận đổi cả ${PAX.length} người sang ${code}`, kind: 'pri', go: 'change' },
+  { label: `${n(3)}Chọn ${other(code)} · ${F(other(code)).time.slice(6)}`, say: `Cho mình ${other(code)} nhé`, go: 'pick:' + other(code) },
+  { label: 'Mình phải bay tối nay', say: 'Mình phải bay tối nay, không đợi sáng mai được', go: 'staff:tonight' },
+  { label: `${n(4)}Nhả chỗ`, say: 'Thôi, nhả chỗ đi', go: 'release' },
+  { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }
+];
+
+/* ============ CÁC BƯỚC ============
+   Mỗi bước: enter() đổi trạng thái (giả lập tool) · view() trả về nội dung tin AI.
+   Tin AI là câu nguyên văn trong spec §3. */
+const STEPS = {
+  // Ca A · kịch bản #3
+  a1: {
+    enter: () => hold('BM 201'),
+    view: () => ({
+      status: 'Chưa đổi gì · cần bạn chọn',
+      html: `Chuyến BM 213 tối nay đã bị huỷ do bão. Chuyến sớm nhất là BM 217 lúc 21:00 tối nay, nhưng <b>chỉ còn 1 chỗ</b>, mà vé của bạn có 2 người (bạn và bé Gia Bình), nên chuyến này không đủ cho cả hai.<br><br>Chuyến sớm nhất đủ chỗ cho 2 người là <b>BM 201, 07:00 sáng mai 13/11</b>. Mình đã giữ 2 chỗ trên BM 201 trong 20 phút. Vé của bạn <b>chưa đổi</b>, lần đổi miễn phí vẫn còn.<br><br>${n(1)}Bạn muốn đổi cả hai người sang BM 201, chọn chuyến khác, hay bắt buộc phải bay tối nay?`
+        + flightList() + holdCard() + confirmCard('BM 201') + EVIDENCE(' · BM 217 còn 1 chỗ'),
+      buttons: pickButtons('BM 201')
+    })
+  },
+  // chọn / đổi chuyến (dùng chung cho cả 3 ca)
+  'pick:BM 201': { enter: () => hold('BM 201'), view: () => pickView('BM 201') },
+  'pick:BM 205': { enter: () => hold('BM 205'), view: () => pickView('BM 205') },
+  change: {
+    enter: () => { S.changed = S.hold; release(); },
+    view: () => ({
+      status: 'Đã đổi', ok: true,
+      html: `<div class="card done"><b>Đã đổi sang ${S.changed} · ${F(S.changed).time}</b> cho ${PAX.map(p => p.name).join(' và ')}.<br>Vé điện tử mới gửi về email trong khoảng 60 phút. Lần đổi miễn phí đã được dùng.</div>`,
+      buttons: [{ label: 'Sai rồi, mình muốn chuyến khác', say: `Sao lại ${F(S.changed).time.slice(6)}?? mình bảo chuyến khác mà, đổi lại đi`, go: 'correct' }]
+    })
+  },
+  // kịch bản #9 · correction
+  correct: {
+    enter: () => { hold(other(S.changed)); },
+    view: () => ({
+      status: 'Trợ lý không tự đổi lại được', bad: true,
+      html: `Mình hiểu bạn cần chuyến khác. Vé đã được đổi sang ${S.changed} và lần đổi miễn phí đã dùng, nên <b>trợ lý không tự đổi lại được</b>. Mình đã giữ 2 chỗ ${S.hold} · ${F(S.hold).time} trong 20 phút và chuyển bạn cho nhân viên ngay.`
+        + holdCard() + `<div class="card blocked"><b>Không có nút "đổi lại"</b>: đổi vé lần hai nằm ngoài quyền của trợ lý. Nhân viên sẽ xem còn cách nào.</div>`,
+      buttons: [],
+      then: 'staff:wrong'
+    })
+  },
+  release: {
+    enter: () => release(),
+    view: () => ({
+      status: 'Đã nhả chỗ', ok: true,
+      html: 'Đã nhả chỗ. Vé vẫn ở trạng thái chuyến bị huỷ, quyền đổi miễn phí và quyền hoàn vé của bạn vẫn còn trong 48 giờ. Khi nào cần, bạn nhắn lại là được.',
+      buttons: [{ label: 'Xem lại các chuyến', say: 'Cho mình xem lại các chuyến', go: 'list' }]
+    })
+  },
+  list: {
+    view: () => ({
+      status: 'Chưa làm gì',
+      html: 'Các chuyến thay thế, mình đã lọc theo số chỗ cho 2 người:' + flightList() + EVIDENCE(),
+      buttons: [
+        { label: 'Giữ chỗ BM 201 · 07:00', say: 'Giữ cho mình BM 201', go: 'pick:BM 201', kind: 'pri' },
+        { label: 'Giữ chỗ BM 205 · 09:30', say: 'Giữ cho mình BM 205', go: 'pick:BM 205' },
+        { label: 'Mình muốn hoàn vé', say: 'Mình muốn hoàn vé', go: 'b1', kind: 'danger' },
+        { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }
+      ]
+    })
+  },
+
+  // Ca B · kịch bản #4
+  b1: {
+    enter: () => { if (!S.hold) hold('BM 201'); },
+    view: () => ({
+      status: 'Chưa gửi gì',
+      html: `Mình <b>chưa gửi gì cả</b>. Trước khi gửi, bạn cần biết 3 điều:<br>1. Yêu cầu hoàn vé <b>gửi rồi thì không huỷ được</b>: bạn sẽ mất chỗ trên mọi chuyến thay thế.<br>2. Bạn được hoàn <b>toàn bộ</b> tiền vé, về phương thức đã thanh toán (có trường hợp hoàn bằng voucher); có thể mất <b>tới 90 ngày</b>.<br>3. Chuyến bị huỷ do bão nên hãng <b>không bồi thường tiền mặt</b> thêm.<br><br>${n(1)}Bạn muốn hoàn vé cho <b>cả hai người</b> (bạn và bé Gia Bình) phải không? Nếu vẫn cần bay, ${S.hold} · ${F(S.hold).time} còn chỗ; mình đang giữ 2 chỗ trong 20 phút để bạn còn lựa chọn.`
+        + `<div class="card draft"><b>Bản nháp yêu cầu hoàn · CHƯA GỬI</b> <span class="pill lv-auto">soạn sẵn · tự làm</span><ul><li>Lý do: hãng huỷ chuyến (thời tiết)</li><li>Hoàn: toàn bộ tiền vé</li><li>Hành khách: chưa chọn, bạn tự chọn ở bước gửi</li></ul></div>`
+        + holdCard() + EVIDENCE(' · quy định hoàn: gửi rồi không huỷ được, xử lý tới 90 ngày'),
+      buttons: [
+        { label: 'Tiếp tục hoàn vé…', kind: 'danger', modal: true },
+        { label: `${n(4)}Xem chuyến thay thế`, say: 'Khoan, cho mình xem chuyến thay thế', go: 'list' },
+        { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }
+      ]
+    })
+  },
+  'b-sent': {
+    enter: () => { S.refunded = true; release(); },
+    view: () => ({
+      status: 'Đã gửi yêu cầu hoàn', ok: true,
+      html: `<div class="card done"><b>Đã gửi yêu cầu hoàn vé</b> cho ${PAX.map(p => p.name).join(' và ')}.<br>Mã yêu cầu: HT-55821 (dựng) · gửi lúc 15:0x · tiền về phương thức đã thanh toán, có thể mất tới 90 ngày. Mình đã nhả chỗ đang giữ.</div>`,
+      buttons: [{ label: 'Mình lỡ bấm, muốn đổi chuyến', say: 'Ơ mình lỡ bấm, mình muốn đổi chuyến cơ', go: 'b-oops' }]
+    })
+  },
+  'b-oops': {
+    view: () => ({
+      status: 'Trợ lý không rút được', bad: true,
+      html: 'Yêu cầu hoàn HT-55821 đã gửi và <b>trợ lý không rút lại được</b>. Mình chuyển bạn cho nhân viên ngay, kèm mã yêu cầu và giờ gửi. Mình không hứa là rút được; nhân viên sẽ nói rõ còn cách nào.',
+      buttons: [], then: 'staff:oops'
+    })
+  },
+  // Luật cấm: hoàn 1 người làm bé 5 tuổi còn lại một mình trên vé
+  'b-partial': {
+    view: () => ({
+      status: 'Chưa gửi · cần nhân viên', bad: true,
+      html: 'Bạn chọn hoàn vé cho 1 trong 2 người. Bé Gia Bình 5 tuổi không thể còn lại một mình trên vé, nên <b>trợ lý không gửi yêu cầu này</b>. Chưa có gì được gửi. Mình chuyển bạn cho nhân viên để xử lý đúng quy định.'
+        + `<div class="card blocked"><b>Việc trợ lý không làm:</b> hoàn hoặc đổi vé làm tách trẻ nhỏ khỏi người lớn. Không có nút làm việc này.</div>`,
+      buttons: [], then: 'staff:child'
+    })
+  },
+
+  // Ca thường · kịch bản #1
+  c1: {
+    view: () => ({
+      status: 'Chuyến đã huỷ',
+      html: 'Chuyến BM 213 lúc 19:00 tối nay <b>đã bị huỷ do bão</b>, bạn đừng ra sân bay cho chuyến này nhé. Bạn có 2 lựa chọn: <b>đổi miễn phí 1 lần</b> trong 48 giờ, hoặc <b>hoàn toàn bộ</b> tiền vé. Các chuyến thay thế, mình đã lọc theo số chỗ cho 2 người:' + flightList() + EVIDENCE(),
+      buttons: [
+        { label: 'Giữ chỗ BM 201 · 07:00', say: 'Giữ cho mình BM 201', go: 'pick:BM 201', kind: 'pri' },
+        { label: 'Giữ chỗ BM 205 · 09:30', say: 'Giữ cho mình BM 205', go: 'pick:BM 205' },
+        { label: 'Mình muốn hoàn vé', say: 'Mình muốn hoàn vé', go: 'b1', kind: 'danger' },
+        { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }
+      ]
+    })
+  }
+};
+function pickView(code) {
+  return {
+    status: 'Chưa đổi gì · cần bạn xác nhận',
+    html: `Mình đã giữ 2 chỗ trên <b>${code} · ${F(code).time}</b> (và nhả chỗ cũ nếu có). Vé của bạn <b>chưa đổi</b>.` + holdCard() + confirmCard(code) + EVIDENCE(),
+    buttons: pickButtons(code)
+  };
+}
+
+/* ============ CHUYỂN NHÂN VIÊN (chuyen_nhan_vien · tự làm) ============ */
+const STAFF = {
+  general: { reason: 'Khách bấm "Gặp nhân viên"', want: 'Chưa rõ, khách muốn nói chuyện với người', reply: 'Chào chị An, em là Hà bên hỗ trợ. Em đã xem đặt chỗ TRV-7Q2K và lịch sử chat, chị cần em hỗ trợ gì thêm ạ?' },
+  tonight: { reason: 'Khách bắt buộc bay tối nay, BM 217 chỉ còn 1 chỗ cho 2 người', want: 'Tới TP.HCM tối nay cho cả 2 người', reply: 'Chào chị An, em là Hà bên hỗ trợ. BM 217 tối nay chỉ còn 1 chỗ nên không đi được cả hai mẹ con. Em đang kiểm tra danh sách chờ và chuyến hãng khác; chỗ BM 201 vẫn đang giữ cho chị trong lúc em kiểm tra.' },
+  wrong: { reason: 'Khách báo đổi nhầm chuyến; lần đổi miễn phí đã dùng', want: 'Đổi sang chuyến khác chuyến vừa đổi', reply: 'Chào chị An, em là Hà bên hỗ trợ. Em thấy vé vừa đổi lúc 15:0x và chỗ chuyến chị muốn đang được giữ. Em kiểm tra với hãng xem có đổi lại được không và báo chị trong vòng 15 phút.' },
+  oops: { reason: 'Khách báo lỡ gửi yêu cầu hoàn (HT-55821), muốn đổi chuyến', want: 'Rút yêu cầu hoàn, đổi chuyến', reply: 'Chào chị An, em là Hà bên hỗ trợ. Yêu cầu HT-55821 đã gửi nên em không hứa rút được, nhưng em sẽ liên hệ hãng ngay và báo chị kết quả. Trong lúc chờ, em không thể giữ chỗ vì vé đã vào quy trình hoàn.' },
+  child: { reason: 'Hoàn 1 người sẽ làm trẻ 5 tuổi còn lại một mình trên vé (luật cấm)', want: 'Hoàn vé cho 1 trong 2 hành khách', reply: 'Chào chị An, em là Hà bên hỗ trợ. Bé 5 tuổi cần đi cùng người lớn, nên em sẽ hướng dẫn chị phương án cho cả hai, hoặc thủ tục nếu có người lớn khác đi cùng bé.' },
+  date: { reason: 'Khách muốn đổi sang ngày ngoài dữ liệu chuyến thay thế (sau 13/11); chưa rõ chính sách 48 giờ có áp dụng', want: 'Đổi sang một ngày khác', reply: 'Chào chị An, em là Hà bên hỗ trợ. Em đang kiểm tra với hãng xem vé có đổi miễn phí sang ngày chị muốn được không, và báo chị ngay khi có kết quả.' },
+  name: { reason: 'Khách muốn đổi tên người bay (không có tool)', want: 'Đổi tên một hành khách', reply: 'Chào chị An, em là Hà bên hỗ trợ. Em sẽ kiểm tra quy định đổi tên của hãng cho vé này và báo chị phí, nếu được đổi.' }
+};
+function toStaff(key) {
+  S.staff = key; S.staffSince = now(); S.staffDone = false;
+  push({ kind: 'ai', status: 'Đã chuyển nhân viên', ok: true,
+    html: `${n(5)}Mình đã chuyển bạn cho <b>nhân viên hỗ trợ</b>. Nhân viên sẽ trả lời trong khoảng <b>5 phút</b>. Nhân viên thấy sẵn toàn bộ: chuyến bị huỷ, 2 hành khách, việc mình đã làm và chưa làm, chỗ đang giữ. Bạn không phải kể lại.` + holdCard(),
+    buttons: [] });
+}
+function renderStaff() {
+  const el = document.getElementById('staff');
+  if (!S.staff) { el.innerHTML = '<div class="empty">Chưa có ca nào được chuyển. Trợ lý chuyển khi khách bấm "Gặp nhân viên", hoặc khi gặp việc ngoài quyền.</div>'; return; }
+  const c = STAFF[S.staff];
+  const did = [];
+  if (S.hold) did.push(`đang giữ ${PAX.length} chỗ ${S.hold}, còn <span class="timer">--:--</span>`);
+  if (S.changed) did.push(`đã đổi vé sang ${S.changed} (lần đổi miễn phí đã dùng)`);
+  if (S.refunded) did.push('đã gửi yêu cầu hoàn HT-55821');
+  el.innerHTML = `<div class="card confirm">${n(5)}<b>${S.staffDone ? 'Đã nhận' : 'Ca mới'} · TRV-7Q2K</b> · khách chờ <span id="wait">0:00</span>
+    <dl class="sum">
+      <dt>Lý do trợ lý chuyển</dt><dd>${c.reason}</dd>
+      <dt>Khách muốn</dt><dd>${c.want}</dd>
+      <dt>Hành khách</dt><dd>${PAX.map(p => `${p.name} (${p.age} tuổi)`).join(' · ')}</dd>
+      <dt>Trợ lý đã làm</dt><dd>${did.length ? did.join('<br>') : 'chưa làm gì thay đổi vé'}</dd>
+      <dt>Trợ lý chưa làm</dt><dd>${S.changed ? 'không đổi lại vé' : 'chưa đổi vé'} · ${S.refunded ? 'không rút yêu cầu hoàn' : 'chưa gửi yêu cầu hoàn'} · không hứa bồi thường</dd>
+      <dt>Lịch sử chat</dt><dd>${S.log.filter(m => m.kind === 'user').map(m => '“' + esc(m.text) + '”').join(' → ')}</dd>
+    </dl></div>
+    <div class="btns">${S.staffDone ? '' : '<button class="btn pri" id="take">Nhận ca và trả lời khách</button>'}</div>`;
+  const t = document.getElementById('take');
+  if (t) t.onclick = () => { S.staffDone = true; push({ kind: 'human', html: c.reply }); };
+}
+
+/* ============ KHUNG CHAT ============ */
+function push(m) { S.log.push(m); render(); }
+function go(target) {
+  if (target.startsWith('staff:')) return toStaff(target.slice(6));
+  const st = STEPS[target];
+  if (st.enter) st.enter();
+  const v = st.view();
+  push({ kind: 'ai', ...v });
+  if (v.then) go(v.then);
+}
+function press(b) {
+  if (b.modal) return openModal();
+  if (b.say) S.log.push({ kind: 'user', text: b.say });
+  go(b.go);
+}
+function render() {
+  const chat = document.getElementById('chat');
+  const lastAi = S.log.map(m => m.kind).lastIndexOf('ai');
+  chat.innerHTML = S.log.map((m, i) => {
+    if (m.kind === 'user') return `<div class="u">${esc(m.text)}</div>`;
+    if (m.kind === 'sys') return `<div class="a sys">${m.html}</div>`;
+    if (m.kind === 'human') return `<div class="a human"><div class="who">Nhân viên hỗ trợ (người thật)</div>${m.html}</div>`;
+    const btns = (m.buttons || []).map((b, j) => `<button class="btn ${b.kind || ''}" data-m="${i}" data-b="${j}" ${i === lastAi && !(S.staff && !S.staffDone) ? '' : 'disabled'}>${b.label}</button>`).join('');
+    return `<div class="a"><div class="who">Trợ lý đặt chỗ (AI)</div><span class="status ${m.ok ? 'okk' : m.bad ? 'bad' : ''}">${m.status}</span><div>${m.html}</div>${btns ? `<div class="btns">${btns}</div>` : ''}</div>`;
+  }).join('');
+  chat.querySelectorAll('button[data-m]:not(:disabled)').forEach(el => el.onclick = () => press(S.log[+el.dataset.m].buttons[+el.dataset.b]));
+  chat.scrollTop = chat.scrollHeight;
+  renderStaff(); tick();
+}
+
+/* đồng hồ giữ chỗ: nhắc khi còn 5 phút, tự nhả khi hết giờ */
+function tick() {
+  const s = S.hold ? left() : 0;
+  document.querySelectorAll('.timer').forEach(el => el.textContent = S.hold ? mmss(s) : 'đã nhả');
+  const w = document.getElementById('wait');
+  if (w) { const x = Math.round((now() - S.staffSince) / 1000); w.textContent = `${Math.floor(x / 60)}:${String(x % 60).padStart(2, '0')}`; }
+  if (S.hold && s <= 300 && !S.warned) { S.warned = true; push({ kind: 'sys', html: `Trợ lý nhắn: chỗ giữ trên ${S.hold} <b>còn 5 phút</b>. Bạn chưa xác nhận nên vé chưa đổi.` }); }
+  if (S.hold && s <= 0) { const c = S.hold; release(); push({ kind: 'sys', html: `Hết 20 phút: chỗ giữ trên ${c} <b>đã tự nhả</b>. Vé chưa đổi; quyền đổi miễn phí vẫn còn trong 48 giờ. Trợ lý không tự đổi khi bạn chưa xác nhận.` }); }
+}
+setInterval(tick, 1000);
+
+/* ============ HỘP GỬI YÊU CẦU HOÀN (gui_yeu_cau_hoan_ve · cần khách xác nhận) ============ */
+const modal = document.getElementById('modal'), send = document.getElementById('send');
+function openModal() {
+  modal.querySelectorAll('input').forEach(i => i.checked = false);
+  send.disabled = true; modal.classList.add('show');
+}
+modal.addEventListener('change', () => {
+  const k = [...modal.querySelectorAll('.px')].filter(i => i.checked).length;
+  send.disabled = !(k > 0 && document.getElementById('ack').checked);
+});
+document.getElementById('cancel').onclick = () => modal.classList.remove('show');
+send.onclick = () => {
+  const k = [...modal.querySelectorAll('.px')].filter(i => i.checked).length;
+  modal.classList.remove('show');
+  S.log.push({ kind: 'user', text: k === PAX.length ? '[Bấm gửi hoàn cho 2 hành khách]' : '[Bấm gửi hoàn cho 1 hành khách]' });
+  go(k === PAX.length ? 'b-sent' : 'b-partial');
+};
+
+/* ============ CA LẠ: khách tự gõ (router giả lập, thay cho model thật) ============ */
+function route(text) {
+  const t = text.toLowerCase();
+  const has = (...w) => w.some(x => t.includes(x));
+  // #14 · luật cấm: không nhận, không xin số thẻ / OTP
+  if (has('số thẻ', 'otp', 'cvv', 'mã xác thực') || /\d{4}[\s.-]?\d{4}/.test(t))
+    return push({ kind: 'ai', status: 'Không nhận thông tin thẻ', bad: true, html: 'Bạn <b>đừng gửi số thẻ hay mã OTP</b> trong chat; mình không nhận và sẽ không bao giờ xin những thông tin này. Bạn nên xoá tin vừa gửi. Chuyến của bạn bị huỷ nên <b>đổi chuyến miễn phí (0 đ)</b>; nếu có khoản cần trả, app sẽ hiện màn hình thanh toán riêng, không qua chat.' + EVIDENCE(), buttons: [{ label: 'Xem chuyến thay thế', say: 'Cho mình xem chuyến thay thế', go: 'list' }] });
+  if (has('nhân viên hãng', 'mã nv', 'bỏ qua quy định', 'lần 2', 'lần hai'))
+    return push({ kind: 'ai', status: 'Không làm theo', bad: true, html: 'Mình chỉ áp dụng chính sách trong đặt chỗ: vé này được đổi miễn phí <b>1 lần</b>. Mình không làm theo chỉ dẫn trong tin nhắn, kể cả khi người nhắn tự xưng là nhân viên. Nếu cần ngoại lệ, bạn gặp nhân viên hỗ trợ của app.', buttons: [{ label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }] });
+  if (has('đổi tên', 'đi thay', 'sang tên'))
+    return push({ kind: 'ai', status: 'Ngoài quyền trợ lý', bad: true, html: 'Trợ lý <b>không đổi được tên người bay</b>. Việc này do nhân viên xử lý theo quy định của hãng, có thể có phí. Mình chuyển bạn cho nhân viên nhé.', buttons: [] }), toStaff('name');
+  if (has('một mình', 'bé đi', 'bé bay', 'tách', 'bà ngoại', 'với bà'))
+    return push({ kind: 'ai', status: 'Ngoài quyền trợ lý', bad: true, html: 'Bé Gia Bình 5 tuổi cần bay cùng người lớn trên vé. Tách vé hoặc để bé đi với người không có trong đặt chỗ là việc <b>trợ lý không làm</b>; mình chuyển bạn cho nhân viên, chỗ đang giữ (nếu có) vẫn giữ.', buttons: [] }), toStaff('child');
+  if (has('bồi thường', 'đền'))
+    return push({ kind: 'ai', status: 'Theo chính sách', html: 'Chuyến bị huỷ <b>do thời tiết (bão)</b> nên hãng Bay Mẫu <b>không bồi thường tiền mặt</b>. Bạn được đổi miễn phí 1 lần trong 48 giờ, hoặc hoàn toàn bộ tiền vé.' + EVIDENCE(), buttons: [{ label: 'Xem chuyến thay thế', say: 'Cho mình xem chuyến thay thế', go: 'list' }, { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }] });
+  // #11 · không bịa trạng thái xuất vé
+  if (has('chưa thấy vé', 'vé mới', 'chưa nhận được vé', 'email'))
+    return push({ kind: 'ai', status: 'Theo quy trình xuất vé', html: `Vé mới thường tới email <b>trong khoảng 60 phút</b> sau khi đổi. ${S.changed ? `Trong đặt chỗ, vé của bạn đã ở chuyến <b>${S.changed}</b>; đó là căn cứ chính, kể cả khi email chưa tới.` : 'Hiện đặt chỗ của bạn <b>chưa có lần đổi nào</b>.'} Mình không xem được trạng thái gửi email, nên quá 60 phút mà chưa thấy thì bạn gặp nhân viên. Mình sẽ không đổi lại vé vì việc này.`, buttons: [{ label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }] });
+  // #12 · không khẳng định điều dữ liệu không có
+  if (has('tuần sau', '20/11', 'ngày khác', 'tháng sau') || /\b(1[4-9]|2\d|3[01])\/11\b/.test(t))
+    return push({ kind: 'ai', status: 'Ngoài dữ liệu của mình', bad: true, html: 'Mình chỉ có các chuyến thay thế tới <b>13/11</b>, và chính sách ghi "đổi miễn phí 1 lần trong 48 giờ". Mình <b>không chắc</b> chính sách có áp dụng cho ngày bạn muốn không, nên mình không hứa miễn phí và không đổi. Mình chuyển bạn cho nhân viên để kiểm tra.', buttons: [] }), toStaff('date');
+  // #13 · luật số chỗ >= số hành khách
+  if (has('21h', '21:00', '9h tối', 'chuyến tối'))
+    return push({ kind: 'ai', status: 'Chưa giữ gì · cần bạn chọn', html: `${n(1)}BM 217 lúc 21:00 tối nay <b>chỉ còn 1 chỗ</b>, mà vé của bạn có 2 người, nên mình chưa giữ chuyến này. Bạn cần cả hai cùng bay tối nay, hay chỉ một người?` + flightList() + EVIDENCE(' · BM 217 còn 1 chỗ'), buttons: [
+      { label: 'Giữ 2 chỗ BM 201 · 07:00', say: 'Thôi giữ cho mình BM 201', go: 'pick:BM 201', kind: 'pri' },
+      { label: 'Cả hai phải bay tối nay', say: 'Cả hai phải bay tối nay', go: 'staff:tonight' },
+      { label: 'Chỉ mình tôi bay tối nay', say: 'Chỉ mình tôi bay tối nay, bé đi sau', go: 'staff:child' }] });
+  if (has('9h30', '9:30', '9 rưỡi', '0930')) return go('pick:BM 205');
+  if (has('hoàn', 'huỷ hết', 'hủy hết', 'refund')) return go('b1');
+  if (has('sớm nhất', 'đổi')) return go('a1');
+  if (has('mấy giờ', 'giờ bay', 'lúc nào')) return go('c1');
+  if (has('nhân viên', 'người thật', 'tổng đài')) return toStaff('general');
+  push({ kind: 'ai', status: 'Mình chưa chắc hiểu đúng', html: `${n(1)}Mình chưa chắc hiểu đúng ý bạn, nên mình chưa làm gì. Bạn muốn:`, buttons: [
+    { label: 'Đổi chuyến', say: 'Mình muốn đổi chuyến', go: 'list' },
+    { label: 'Hoàn vé', say: 'Mình muốn hoàn vé', go: 'b1' },
+    { label: `${n(5)}Gặp nhân viên`, kind: 'staff', go: 'staff:general' }] });
+}
+document.getElementById('compose').onsubmit = e => {
+  e.preventDefault();
+  const i = document.getElementById('msg'); const v = i.value.trim(); if (!v) return;
+  i.value = ''; S.log.push({ kind: 'user', text: v }); route(v);
+};
+
+/* ============ BẢNG MỨC TỰ CHỦ + CHÚ THÍCH ============ */
+const LV = { auto: ['Tự làm', 'lv-auto'], ask: ['Khách xác nhận', 'lv-ask'], no: ['Cấm', 'lv-no'] };
+document.getElementById('tools').innerHTML = [
+  ['tra_cuu_dat_cho', 'auto', 'Chỉ đọc. Luật: tra lại trước mỗi đề xuất, không dùng số chỗ cũ.'],
+  ['giu_cho_chuyen_moi', 'auto', 'Tự nhả sau 20 phút, khách không mất gì. Chờ người thì chỗ hết.'],
+  ['doi_chuyen_bay', 'ask', 'Mất lần đổi miễn phí duy nhất, không có tool đổi lại. Một lần bấm có tên từng người chặn được.'],
+  ['soan_yeu_cau_hoan_ve (tách mới)', 'auto', 'Chỉ soạn nháp, chưa gửi gì: sai thì xoá.'],
+  ['gui_yeu_cau_hoan_ve', 'ask', 'Gửi rồi không huỷ được. Khách chọn từng người và tích ô; tin nhắn không bao giờ tự kích hoạt gửi.'],
+  ['chuyen_nhan_vien', 'auto', 'Chuyển thừa chỉ tốn vài phút của nhân viên.'],
+  ['Tách trẻ nhỏ khỏi người lớn', 'no', 'Trẻ 5 tuổi bay không người lớn: không đảo được bằng xác nhận. Chuyển nhân viên.'],
+  ['Đổi vé lần hai / ngoại lệ theo tin nhắn', 'no', 'Tin nhắn là dữ liệu, không phải lệnh.'],
+  ['Hứa bồi thường tiền mặt', 'no', 'Huỷ do thời tiết: chính sách ghi không bồi thường.']
+].map(([t, l, w]) => `<tr><td><code>${t}</code></td><td><span class="pill ${LV[l][1]}">${LV[l][0]}</span></td><td>${w}</td></tr>`).join('');
+document.getElementById('ann').innerHTML = [
+  [1, 'HAX G10 · thu hẹp khi nghi ngờ', 'Câu hỏi lại một câu ở cuối tin AI; câu "mình chưa chắc hiểu đúng" khi gặp ca lạ.'],
+  [2, 'HAX G11 + PAIR Explainability & Trust', 'Dòng "Dựa vào" dưới mỗi đề xuất; BM 217 làm mờ, ghi lý do "chỉ còn 1 chỗ, vé có 2 người".'],
+  [3, 'HAX G9 · sửa dễ', 'Nút chọn chuyến khác ngay trên thẻ xác nhận, không phải nhắn lại từ đầu.'],
+  [4, 'HAX G8 · gạt bỏ dễ', 'Thẻ giữ chỗ có đếm ngược, nút "Nhả chỗ"; "Xem chuyến thay thế" để bỏ ý định hoàn mà không mất gì.'],
+  [5, 'PAIR Errors + Graceful Failure', 'Nút "Gặp nhân viên" và Màn 2: nhân viên thấy sẵn lý do chuyển, việc AI đã làm / chưa làm, chỗ đang giữ.'],
+  [6, 'HAX G1 · làm rõ làm được gì (+ minh bạch là AI)', 'Dải xanh đầu chat: đang chat với AI, AI được làm gì, không làm gì.'],
+  [7, 'Ma sát đúng chỗ (G10 cho việc không đảo được)', 'Hộp gửi hoàn: chọn từng hành khách, mặc định chưa tích, phải tích "không rút lại được".']
+].map(([k, p, w]) => `<li>${n(k)}<b>${p}</b>: ${w}</li>`).join('');
+
+/* ============ CHỌN CA ============ */
+const CASES = {
+  A: { say: 'Đổi giúp mình chuyến sớm nhất nhé', go: 'a1' },
+  B: { say: 'Thôi huỷ hết đi, hoàn tiền cho mình', go: 'b1' },
+  C: { say: 'Chuyến của mình mấy giờ bay vậy?', go: 'c1' }
+};
+function start(k, extra = []) {
+  window.__skip = 0; reset();
+  document.querySelectorAll('[data-case]').forEach(b => b.classList.toggle('on', b.dataset.case === k));
+  S.log.push({ kind: 'user', text: CASES[k].say });
+  go(CASES[k].go);
+  extra.forEach(x => {
+    if (x === 'modal') return openModal();
+    if (x.startsWith('msg:')) { S.log.push({ kind: 'user', text: x.slice(4) }); return route(x.slice(4)); }
+    go(x);
+  });
+}
+document.querySelectorAll('[data-case]').forEach(b => b.onclick = () => { history.replaceState(null, '', '#' + b.dataset.case); start(b.dataset.case); });
+document.getElementById('ff').onclick = () => { window.__skip = (window.__skip || 0) + 15 * 60 * 1000; tick(); };
+document.getElementById('showN').onchange = e => document.body.classList.toggle('hide-n', !e.target.checked);
+
+// #A · #B · #C · hoặc #A/staff:tonight để mở sẵn một trạng thái (dùng khi chụp ảnh)
+const [hk, ...hx] = decodeURIComponent(location.hash.slice(1)).split('/');
+start(CASES[hk] ? hk : 'A', hx);
+</script>
+</body>
+</html>
